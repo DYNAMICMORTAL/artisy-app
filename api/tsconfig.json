@@ -24,8 +24,5 @@
   "exclude": [
     "node_modules",
     "dist"
-  ],
-  "scripts": {
-    "build": "tsc"
-  }
+  ]
 }
