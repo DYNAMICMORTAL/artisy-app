@@ -25,8 +25,8 @@ export function Orders() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [diagnosticInfo, setDiagnosticInfo] = useState<Record<string, unknown> | null>(null)
+  const [error] = useState<string | null>(null)
+  // const [setDiagnosticInfo] = useState<Record<string, unknown> | null>(null)
 
   useEffect(() => {
     checkUser()
@@ -67,7 +67,7 @@ export function Orders() {
       }
       
       console.log('=== DIAGNOSTIC INFO ===', diagnostic)
-      setDiagnosticInfo(diagnostic)
+      // setDiagnosticInfo(diagnostic)
     } catch (err) {
       console.error('Diagnostic error:', err)
     }
