@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 
 export const errorHandler = (
   err: Error,
-  req: Request,
+  _req: Request,
   res: Response
 ) => {
   console.error('Error:', err)

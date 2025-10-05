@@ -30,7 +30,7 @@ app.use('/api/payments/webhook', express.raw({ type: 'application/json' }))
 app.use(express.json())
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
@@ -50,7 +50,7 @@ app.use('/api/payments', paymentRoutes)
 app.use(errorHandler)
 
 // 404 handler
-app.use((req, res) => {
+app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' })
 })
 

@@ -40,7 +40,7 @@ export const authenticate = async (
 // Optional authentication (doesn't fail if no token)
 export const optionalAuth = async (
   req: AuthRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) => {
   try {

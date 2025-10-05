@@ -158,7 +158,7 @@ export const getFeaturedProducts = async (req: AuthRequest, res: Response) => {
 }
 
 // Get filter options (categories, art forms, etc.)
-export const getFilterOptions = async (req: AuthRequest, res: Response) => {
+export const getFilterOptions = async (_req: AuthRequest, res: Response) => {
   try {
     const { data, error } = await supabaseAdmin
       .from('products')
