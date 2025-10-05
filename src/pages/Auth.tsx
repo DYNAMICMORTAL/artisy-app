@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
-import { supabase } from '../lib/supabase'
+import { authAPI } from '../lib/api'
 
 export function Auth() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -20,27 +20,34 @@ export function Auth() {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-          },
-        })
-        
-        if (error) throw error
-        
-        setMessage('Check your email for the confirmation link!')
+        await authAPI.signup(email, password)
+        setMessage('Account created successfully! Please sign in.')
+        setIsSignUp(false)
+        setEmail('')
+        setPassword('')
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
+        const response = await authAPI.login(email, password) as {
+          success: boolean
+          data: {
+            user: { id: string; email: string }
+            session: { access_token: string; refresh_token: string; expires_at: number }
+          }
+        }
         
-        if (error) throw error
-        
-        // Redirect to home page on successful login
-        window.location.href = '/'
+        if (response.success) {
+          // Store auth token and user info in localStorage
+          localStorage.setItem('sb-oumhpjuzkubfieowkjxe-auth-token', JSON.stringify({
+            access_token: response.data.session.access_token,
+            refresh_token: response.data.session.refresh_token,
+            expires_at: response.data.session.expires_at,
+            user: response.data.user
+          }))
+          
+          // Redirect to home page on successful login
+          window.location.href = '/'
+        } else {
+          setError('Login failed. Please try again.')
+        }
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred')

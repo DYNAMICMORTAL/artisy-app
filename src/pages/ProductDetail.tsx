@@ -6,7 +6,7 @@ import { Card, CardContent } from '../components/ui/card'
 import { Header } from '../components/Header'
 import { ShoppingCart as ShoppingCartComponent } from '../components/ShoppingCart'
 import { useCartStore } from '../store/cart'
-import { supabase, type Product } from '../lib/supabase'
+import { type Product } from '../lib/supabase'
 import { productAPI } from '../lib/api'
 
 interface Review {
@@ -45,15 +45,13 @@ export function ProductDetail() {
 
   const fetchProduct = async (productId: number) => {
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', productId)
-        .single()
+      const response = await productAPI.getProductById(productId) as { success: boolean; data: Product }
+      
+      if (!response.success) {
+        throw new Error('Failed to fetch product')
+      }
 
-      if (error) throw error
-
-      setProduct(data)
+      setProduct(response.data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch product')
     } finally {

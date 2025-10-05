@@ -83,5 +83,15 @@ app.use((err: Error, _req: Request, res: Response, _next: unknown) => {
   })
 })
 
-// Export for Vercel serverless (AFTER all routes are loaded)
+// Start server for local development
+const PORT = process.env.PORT || 3001
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`)
+    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`)
+    console.log(`🔗 CORS enabled for: ${process.env.VITE_SITE_URL || 'http://localhost:5173'}`)
+  })
+}
+
+// Export for Vercel serverless
 export default app

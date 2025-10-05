@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { supabase } from '../lib/supabase'
+import { wishlistAPI } from '../lib/api'
 
 interface WishlistStore {
   items: number[] // Array of product IDs
@@ -31,15 +31,7 @@ export const useWishlistStore = create<WishlistStore>()(
         set({ items: [...state.items, productId] })
 
         try {
-          const { data: { user } } = await supabase.auth.getUser()
-          
-          if (user) {
-            const { error } = await supabase
-              .from('wishlist')
-              .insert({ user_id: user.id, product_id: productId })
-            
-            if (error) throw error
-          }
+          await wishlistAPI.addItem(productId)
         } catch (error) {
           console.error('Error adding to wishlist:', error)
           // Revert optimistic update on error
@@ -55,16 +47,7 @@ export const useWishlistStore = create<WishlistStore>()(
         set({ items: state.items.filter(id => id !== productId) })
 
         try {
-          const { data: { user } } = await supabase.auth.getUser()
-          
-          if (user) {
-            const { error } = await supabase
-              .from('wishlist')
-              .delete()
-              .match({ user_id: user.id, product_id: productId })
-            
-            if (error) throw error
-          }
+          await wishlistAPI.removeItem(productId)
         } catch (error) {
           console.error('Error removing from wishlist:', error)
           // Revert optimistic update on error
@@ -89,25 +72,19 @@ export const useWishlistStore = create<WishlistStore>()(
         set({ isLoading: true })
 
         try {
-          const { data: { user } } = await supabase.auth.getUser()
+          const response = await wishlistAPI.getWishlist() as { success: boolean; data: number[] }
           
-          if (!user) {
+          if (!response.success) {
             set({ items: [], isLoading: false, isInitialized: true })
             return
           }
 
-          const { data, error } = await supabase
-            .from('wishlist')
-            .select('product_id')
-            .eq('user_id', user.id)
-
-          if (error) throw error
-
-          const productIds = data?.map(item => item.product_id) || []
+          // Backend returns array of product IDs directly
+          const productIds = response.data || []
           set({ items: productIds, isLoading: false, isInitialized: true })
         } catch (error) {
           console.error('Error syncing wishlist:', error)
-          set({ isLoading: false, isInitialized: true })
+          set({ items: [], isLoading: false, isInitialized: true })
         }
       },
 

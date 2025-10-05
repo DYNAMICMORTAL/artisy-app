@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { productAPI } from './api'
 import type { Product } from './supabase'
 
 export interface SearchFilters {
@@ -30,98 +30,28 @@ export async function searchProducts(options: SearchOptions): Promise<{
   error?: string
 }> {
   try {
-    let query = supabase
-      .from('products')
-      .select('*', { count: 'exact' })
+    // Build query params for API
+    const params: Record<string, string | number> = {}
+    
+    if (options.query) params.query = options.query
+    if (options.filters?.category) params.category = options.filters.category
+    if (options.filters?.subcategory) params.subcategory = options.filters.subcategory
+    if (options.filters?.artForm) params.art_form = options.filters.artForm
+    if (options.filters?.originState) params.state = options.filters.originState
+    if (options.filters?.priceRange?.min) params.minPrice = options.filters.priceRange.min
+    if (options.filters?.priceRange?.max) params.maxPrice = options.filters.priceRange.max
+    if (options.filters?.isHandmade !== undefined) params.is_handmade = options.filters.isHandmade ? 'true' : 'false'
+    if (options.filters?.isFeatured !== undefined) params.is_featured = options.filters.isFeatured ? 'true' : 'false'
+    if (options.filters?.rating) params.rating = options.filters.rating
+    if (options.sortBy) params.sortBy = options.sortBy
+    if (options.limit) params.limit = options.limit
+    if (options.offset) params.offset = options.offset
 
-    // Apply semantic text search
-    if (options.query && options.query.trim()) {
-      const searchTerm = options.query.trim().toLowerCase()
-      
-      // Multi-field search with semantic matching
-      query = query.or(`name.ilike.*${searchTerm}*,description.ilike.*${searchTerm}*,category.ilike.*${searchTerm}*,subcategory.ilike.*${searchTerm}*,art_form.ilike.*${searchTerm}*,artist_name.ilike.*${searchTerm}*,origin_state.ilike.*${searchTerm}*,material.ilike.*${searchTerm}*`)
-    }
-
-    // Apply filters
-    if (options.filters?.category) {
-      query = query.eq('category', options.filters.category)
-    }
-
-    if (options.filters?.subcategory) {
-      query = query.eq('subcategory', options.filters.subcategory)
-    }
-
-    if (options.filters?.artForm) {
-      query = query.eq('art_form', options.filters.artForm)
-    }
-
-    if (options.filters?.originState) {
-      query = query.eq('origin_state', options.filters.originState)
-    }
-
-    if (options.filters?.priceRange) {
-      query = query
-        .gte('price', options.filters.priceRange.min)
-        .lte('price', options.filters.priceRange.max)
-    }
-
-    if (options.filters?.isHandmade !== undefined) {
-      query = query.eq('is_handmade', options.filters.isHandmade)
-    }
-
-    if (options.filters?.isFeatured !== undefined) {
-      query = query.eq('is_featured', options.filters.isFeatured)
-    }
-
-    if (options.filters?.rating) {
-      query = query.gte('rating', options.filters.rating)
-    }
-
-    // Apply sorting
-    switch (options.sortBy) {
-      case 'price_low':
-        query = query.order('price', { ascending: true })
-        break
-      case 'price_high':
-        query = query.order('price', { ascending: false })
-        break
-      case 'rating':
-        query = query.order('rating', { ascending: false })
-        break
-      case 'newest':
-        query = query.order('created_at', { ascending: false })
-        break
-      case 'featured':
-        query = query.order('is_featured', { ascending: false }).order('rating', { ascending: false })
-        break
-      default: // relevance
-        if (options.query) {
-          // When searching, order by relevance (ts_rank)
-          query = query.order('rating', { ascending: false })
-        } else {
-          // Default to featured first, then rating
-          query = query.order('is_featured', { ascending: false }).order('rating', { ascending: false })
-        }
-    }
-
-    // Apply pagination
-    if (options.limit) {
-      query = query.range(
-        options.offset || 0,
-        (options.offset || 0) + options.limit - 1
-      )
-    }
-
-    const { data: products, count, error } = await query
-
-    if (error) {
-      console.error('Search error:', error)
-      return { products: [], total: 0, error: error.message }
-    }
+    const response = await productAPI.getProducts(params) as { success: boolean; data: Product[]; pagination: { total: number } }
 
     return {
-      products: products || [],
-      total: count || 0
+      products: response.data || [],
+      total: response.pagination?.total || 0
     }
   } catch (error) {
     console.error('Search error:', error)
@@ -138,41 +68,28 @@ export async function getSearchSuggestions(query: string, limit = 5): Promise<st
   if (!query || query.length < 2) return []
 
   try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('name, tags, art_form, artist_name')
-      .ilike('name', `%${query}%`)
-      .limit(limit)
-
-    if (error) {
-      console.error('Suggestion error:', error)
-      return []
-    }
-
+    // Use semantic search to get suggestions
+    const response = await productAPI.semanticSearch(query, limit) as { success: boolean; data: Product[] }
+    
+    if (!response.success || !response.data) return []
+    
     const suggestions: string[] = []
     
-    data?.forEach(product => {
-      // Add product name if it matches
-      if (product.name.toLowerCase().includes(query.toLowerCase())) {
+    response.data.forEach(product => {
+      // Add product name
+      if (product.name) {
         suggestions.push(product.name)
       }
       
       // Add art form if it matches
-      if (product.art_form?.toLowerCase().includes(query.toLowerCase())) {
+      if (product.art_form && product.art_form.toLowerCase().includes(query.toLowerCase())) {
         suggestions.push(product.art_form)
       }
       
       // Add artist name if it matches
-      if (product.artist_name?.toLowerCase().includes(query.toLowerCase())) {
+      if (product.artist_name && product.artist_name.toLowerCase().includes(query.toLowerCase())) {
         suggestions.push(product.artist_name)
       }
-      
-      // Add matching tags
-      product.tags?.forEach((tag: string) => {
-        if (tag.toLowerCase().includes(query.toLowerCase())) {
-          suggestions.push(tag)
-        }
-      })
     })
 
     // Remove duplicates and return limited results
@@ -186,30 +103,21 @@ export async function getSearchSuggestions(query: string, limit = 5): Promise<st
 // Get unique filter values for dropdowns
 export async function getFilterOptions() {
   try {
-    const { data: products, error } = await supabase
-      .from('products')
-      .select('category, subcategory, art_form, origin_state')
-
-    if (error) {
-      console.error('Filter options error:', error)
-      return {
-        categories: [],
-        subcategories: [],
-        artForms: [],
-        states: []
+    const response = await productAPI.getFilters() as {
+      success: boolean
+      data: {
+        categories: string[]
+        subcategories: string[]
+        artForms: string[]
+        states: string[]
       }
     }
 
-    const categories = [...new Set(products?.map(p => p.category).filter(Boolean))]
-    const subcategories = [...new Set(products?.map(p => p.subcategory).filter(Boolean))]
-    const artForms = [...new Set(products?.map(p => p.art_form).filter(Boolean))]
-    const states = [...new Set(products?.map(p => p.origin_state).filter(Boolean))]
-
     return {
-      categories: categories.sort(),
-      subcategories: subcategories.sort(),
-      artForms: artForms.sort(),
-      states: states.sort()
+      categories: response.data?.categories || [],
+      subcategories: response.data?.subcategories || [],
+      artForms: response.data?.artForms || [],
+      states: response.data?.states || []
     }
   } catch (error) {
     console.error('Filter options error:', error)
@@ -225,19 +133,12 @@ export async function getFilterOptions() {
 // Get trending/popular products
 export async function getTrendingProducts(limit = 8): Promise<Product[]> {
   try {
-    const { data: products, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('rating', { ascending: false })
-      .order('review_count', { ascending: false })
-      .limit(limit)
+    const response = await productAPI.getProducts({
+      sortBy: 'rating',
+      limit
+    }) as { success: boolean; data: Product[] }
 
-    if (error) {
-      console.error('Trending products error:', error)
-      return []
-    }
-
-    return products || []
+    return response.data || []
   } catch (error) {
     console.error('Trending products error:', error)
     return []
@@ -247,19 +148,8 @@ export async function getTrendingProducts(limit = 8): Promise<Product[]> {
 // Get featured products for homepage
 export async function getFeaturedProducts(limit = 6): Promise<Product[]> {
   try {
-    const { data: products, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('is_featured', true)
-      .order('rating', { ascending: false })
-      .limit(limit)
-
-    if (error) {
-      console.error('Featured products error:', error)
-      return []
-    }
-
-    return products || []
+    const response = await productAPI.getFeatured(limit) as { success: boolean; data: Product[] }
+    return response.data || []
   } catch (error) {
     console.error('Featured products error:', error)
     return []

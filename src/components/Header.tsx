@@ -2,7 +2,6 @@ import { ShoppingCart, Search, Menu } from 'lucide-react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { useCartStore } from '../store/cart'
-import { supabase } from '../lib/supabase'
 import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
@@ -14,7 +13,7 @@ interface HeaderProps {
 export function Header({ onSearch }: HeaderProps) {
   const { getTotalItems, toggleCart } = useCartStore()
   const [searchQuery, setSearchQuery] = useState('')
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<{ id: string; email: string } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isScrolled, setIsScrolled] = useState(false)
   const location = useLocation()
@@ -31,18 +30,28 @@ export function Header({ onSearch }: HeaderProps) {
   }, [])
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
+    // Check localStorage for auth state
+    const checkAuth = () => {
+      try {
+        const authData = localStorage.getItem('sb-oumhpjuzkubfieowkjxe-auth-token')
+        if (authData) {
+          const parsed = JSON.parse(authData)
+          setUser(parsed.user ?? null)
+        } else {
+          setUser(null)
+        }
+      } catch (error) {
+        console.error('Error parsing auth data:', error)
+        setUser(null)
+      }
       setIsLoading(false)
-    })
+    }
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
+    checkAuth()
 
-    return () => subscription.unsubscribe()
+    // Listen for storage changes (login/logout in other tabs)
+    window.addEventListener('storage', checkAuth)
+    return () => window.removeEventListener('storage', checkAuth)
   }, [])
 
   const handleSearch = (e: React.FormEvent) => {
@@ -55,7 +64,11 @@ export function Header({ onSearch }: HeaderProps) {
   }
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
+    // Clear localStorage
+    localStorage.removeItem('sb-oumhpjuzkubfieowkjxe-auth-token')
+    setUser(null)
+    // Redirect to home
+    window.location.href = '/'
   }
 
   const isActive = (path: string) => location.pathname === path
@@ -138,7 +151,7 @@ export function Header({ onSearch }: HeaderProps) {
               navigate('/browse?category=photography')
             }}
             className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-              isActiveCategory('photography')
+              isActiveCategory('Photography')
                 ? 'text-gallery-charcoal bg-gallery-cream' 
                 : 'text-gray-600 hover:text-gallery-charcoal hover:bg-gallery-cream/50'
             }`}

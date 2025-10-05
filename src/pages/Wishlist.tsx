@@ -1,12 +1,28 @@
 import { useEffect, useState } from 'react'
 import { useWishlistStore } from '../store/wishlist'
-import { supabase } from '../lib/supabase'
-import type { Product } from '../lib/supabase'
+import { productAPI } from '../lib/api'
+import { getCurrentUser } from '../lib/auth'
 import { ProductCard } from '../components/ProductCard'
 import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import { Heart, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+
+interface Product {
+  id: number
+  name: string
+  description: string
+  price: number
+  category: string
+  subcategory: string
+  art_form: string
+  image_url: string
+  artist_name: string
+  origin_state: string
+  is_handmade: boolean
+  is_featured: boolean
+  stock: number
+}
 
 export function Wishlist() {
   const { items: wishlistProductIds, syncWithServer, isLoading: isWishlistLoading } = useWishlistStore()
@@ -15,9 +31,17 @@ export function Wishlist() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    // Check if user is authenticated
+    const user = getCurrentUser()
+    if (!user) {
+      // Redirect to auth if not logged in
+      navigate('/auth')
+      return
+    }
+    
     // Sync wishlist from server
     syncWithServer()
-  }, [syncWithServer])
+  }, [syncWithServer, navigate])
 
   useEffect(() => {
     async function fetchWishlistProducts() {
@@ -29,19 +53,33 @@ export function Wishlist() {
 
       setIsLoading(true)
       try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .in('id', wishlistProductIds)
+        // Filter out any invalid IDs (null, undefined, or non-numbers)
+        const validIds = wishlistProductIds.filter(id => typeof id === 'number' && id > 0)
+        
+        if (validIds.length === 0) {
+          setProducts([])
+          setIsLoading(false)
+          return
+        }
+        
+        console.log('Fetching products for IDs:', validIds)
+        
+        // Fetch each product individually from backend API
+        const productPromises = validIds.map(id => 
+          productAPI.getProductById(id)
+            .then(response => (response as { success: boolean; data: Product }).data)
+            .catch(error => {
+              console.error(`Error fetching product ${id}:`, error)
+              return null
+            })
+        )
 
-        if (error) throw error
-
-        // Sort products to match wishlist order
-        const sortedProducts = wishlistProductIds
-          .map(id => data?.find(p => p.id === id))
-          .filter((p): p is Product => p !== undefined)
-
-        setProducts(sortedProducts)
+        const fetchedProducts = await Promise.all(productPromises)
+        
+        // Filter out any null results and maintain wishlist order
+        const validProducts = fetchedProducts.filter((p): p is Product => p !== null)
+        
+        setProducts(validProducts)
       } catch (error) {
         console.error('Error fetching wishlist products:', error)
       } finally {

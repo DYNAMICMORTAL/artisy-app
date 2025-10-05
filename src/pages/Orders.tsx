@@ -4,7 +4,8 @@ import { Package, ArrowLeft } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Header } from '../components/Header'
-import { supabase } from '../lib/supabase'
+import { orderAPI } from '../lib/api'
+import { getCurrentUser } from '../lib/auth'
 
 interface OrderItem {
   image_url: string
@@ -30,66 +31,24 @@ export function Orders() {
 
   useEffect(() => {
     checkUser()
-    runDiagnostic()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  const runDiagnostic = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      const diagnostic: Record<string, unknown> = {
-        isLoggedIn: !!session?.user,
-        userId: session?.user?.id,
-        userEmail: session?.user?.email,
-      }
-      
-      // Try to fetch all recent orders (without filter)
-      const { data: recentOrders, error: recentError } = await supabase
-        .from('orders')
-        .select('id, user_id, amount, status, created_at')
-        .order('created_at', { ascending: false })
-        .limit(5)
-      
-      diagnostic.recentOrdersCount = recentOrders?.length || 0
-      diagnostic.recentOrdersError = recentError?.message
-      diagnostic.recentOrders = recentOrders
-      
-      // Try to fetch user's orders
-      if (session?.user?.id) {
-        const { data: myOrders, error: myError } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('user_id', session.user.id)
-        
-        diagnostic.myOrdersCount = myOrders?.length || 0
-        diagnostic.myOrdersError = myError?.message
-      }
-      
-      console.log('=== DIAGNOSTIC INFO ===', diagnostic)
-      // setDiagnosticInfo(diagnostic)
-    } catch (err) {
-      console.error('Diagnostic error:', err)
-    }
-  }
 
   const checkUser = async () => {
     try {
       console.log('Checking user session...')
-      const { data: { session } } = await supabase.auth.getSession()
+      const currentUser = getCurrentUser()
       
-      console.log('Session data:', session)
-      console.log('User ID:', session?.user?.id)
+      console.log('Current user:', currentUser)
       
-      if (!session?.user) {
+      if (!currentUser) {
         console.log('No user session found, redirecting to auth')
         // Redirect to auth if not logged in
         window.location.href = '/auth'
         return
       }
 
-      setUser(session.user)
-      await fetchOrders(session.user.id)
+      setUser(currentUser)
+      await fetchOrders()
     } catch (error) {
       console.error('Error checking user:', error)
     } finally {
@@ -97,37 +56,28 @@ export function Orders() {
     }
   }
 
-  const fetchOrders = async (userId: string) => {
+  const fetchOrders = async () => {
     try {
-      console.log('Fetching orders for user:', userId)
+      console.log('Fetching orders from backend API...')
       
-      // Fetch orders with all necessary fields
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          id,
-          amount,
-          status,
-          items,
-          created_at,
-          user_id,
-          stripe_session_id
-        `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
+      // Fetch orders from backend API
+      const response = await orderAPI.getOrders() as {
+        success: boolean
+        data: Order[]
+      }
 
-      console.log('Orders query result:', { data, error })
+      console.log('Orders API response:', response)
 
-      if (error) {
-        console.error('Error fetching orders:', error)
-        throw error
+      if (!response.success) {
+        console.error('Error fetching orders from API')
+        return
       }
       
-      console.log('Raw orders data:', data)
-      console.log('Number of orders found:', data?.length || 0)
+      console.log('Orders data:', response.data)
+      console.log('Number of orders found:', response.data?.length || 0)
       
       // Parse items if they're stored as JSON string
-      const ordersWithParsedItems = (data || []).map(order => {
+      const ordersWithParsedItems = (response.data || []).map(order => {
         console.log('Processing order:', order.id, 'Items type:', typeof order.items)
         return {
           ...order,

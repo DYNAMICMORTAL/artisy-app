@@ -3,7 +3,7 @@ import { Button } from '../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Input } from '../components/ui/input'
 import { useCartStore } from '../store/cart'
-import { supabase } from '../lib/supabase'
+import { getCurrentUser } from '../lib/auth'
 import { orderAPI } from '../lib/api'
 import { Header } from '../components/Header'
 import { ArrowLeft } from 'lucide-react'
@@ -12,14 +12,13 @@ import { Link } from 'react-router-dom'
 export function Checkout() {
   const { items, getTotal } = useCartStore()
   const [loading, setLoading] = useState(false)
-  const [user, setUser] = useState<import('@supabase/supabase-js').User | null>(null)
+  const [user, setUser] = useState<{ id: string; email: string } | null>(null)
   const [guestEmail, setGuestEmail] = useState('')
 
   useEffect(() => {
     // Get current user session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-    })
+    const currentUser = getCurrentUser()
+    setUser(currentUser)
   }, [])
 
   const handleCheckout = async () => {
