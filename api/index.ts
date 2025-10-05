@@ -66,7 +66,7 @@ app.use((_req, res) => {
 // Error handling middleware (must be last)
 app.use(errorHandler)
 
-// Start server
+// Start server (only in development)
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`)
@@ -74,4 +74,5 @@ if (process.env.NODE_ENV !== 'production') {
   })
 }
 
+// Export for Vercel serverless
 export default app
