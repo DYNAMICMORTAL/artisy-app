@@ -83,6 +83,21 @@ export const productAPI = {
   getFeatured: (limit = 4) => apiFetch(`/api/products/featured?limit=${limit}`),
 
   getFilters: () => apiFetch('/api/products/filters'),
+
+  semanticSearch: (query: string, limit = 20) =>
+    apiFetch('/api/products/semantic-search', {
+      method: 'POST',
+      body: JSON.stringify({ query, limit }),
+    }),
+
+  addReview: (productId: number, rating: number, review_text?: string) =>
+    apiFetch(`/api/products/${productId}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify({ rating, review_text }),
+    }),
+
+  getReviews: (productId: number, limit = 20, offset = 0) =>
+    apiFetch(`/api/products/${productId}/reviews?limit=${limit}&offset=${offset}`),
 }
 
 // Cart API

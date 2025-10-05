@@ -7,10 +7,25 @@ import { Header } from '../components/Header'
 import { useCartStore } from '../store/cart'
 import { supabase } from '../lib/supabase'
 
+interface OrderItem {
+  name: string
+  quantity: number
+  price: number
+}
+
+interface Order {
+  id: string
+  amount: number
+  status: string
+  created_at: string
+  items: OrderItem[]
+  // add other fields if needed
+}
+
 export function OrderSuccess() {
   const [searchParams] = useSearchParams()
   const sessionId = searchParams.get('session_id')
-  const [order, setOrder] = useState<any>(null)
+  const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const { clearCart } = useCartStore()
 
@@ -98,7 +113,7 @@ export function OrderSuccess() {
                 <div className="border-t pt-4">
                   <h4 className="font-medium mb-3">Items Ordered</h4>
                   <div className="space-y-2">
-                    {order.items.map((item: any, index: number) => (
+                    {order.items.map((item: OrderItem, index: number) => (
                       <div key={index} className="flex justify-between text-sm">
                         <span>{item.name} × {item.quantity}</span>
                         <span>₹{(item.price * item.quantity).toFixed(2)}</span>

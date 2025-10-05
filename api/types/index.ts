@@ -30,8 +30,23 @@ export interface Product {
   stock_quantity?: number
   rating?: number
   review_count?: number
+  embedding?: number[]
   created_at?: string
   updated_at?: string
+}
+
+// Review Types
+export interface Review {
+  id: string
+  product_id: string
+  user_id: string
+  rating: number
+  review_text?: string
+  created_at: string
+  users?: {
+    id: string
+    email: string
+  }
 }
 
 // Cart Types

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { ProductCard } from '../components/ProductCard'
 import { Header } from '../components/Header'
 import { ShoppingCart } from '../components/ShoppingCart'
@@ -6,7 +6,8 @@ import { Footer } from '../components/Footer'
 import { useCartStore } from '../store/cart'
 import { type Product } from '../lib/supabase'
 import { searchProducts, getFilterOptions, getFeaturedProducts, type SearchOptions, type SearchFilters } from '../lib/search'
-import { Search, Filter, Palette, X, ChevronDown, Grid3x3, List } from 'lucide-react'
+import { productAPI } from '../lib/api'
+import { Search, Filter, Palette, X, ChevronDown, Grid3x3, List, Sparkles } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 
@@ -22,6 +23,7 @@ export function Browse() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [useSemanticSearch, setUseSemanticSearch] = useState(false)
   const [filters, setFilters] = useState<SearchFilters>({})
   const [sortBy, setSortBy] = useState<SearchOptions['sortBy']>('featured')
   const [showFilters, setShowFilters] = useState(false)
@@ -37,29 +39,42 @@ export function Browse() {
   
   const { isOpen, toggleCart } = useCartStore()
 
-  // Get URL parameters for initial filtering
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const category = urlParams.get('category')
-    const search = urlParams.get('search')
-    
-    if (category) {
-      setFilters(prev => ({ ...prev, category }))
+  // Define functions before they are used in useEffect
+  const performSearch = useCallback(async () => {
+    try {
+      setLoading(true)
+      
+      // Use semantic search if enabled and there's a query
+      if (useSemanticSearch && searchQuery.trim()) {
+        const response = await productAPI.semanticSearch(searchQuery, 20) as { success: boolean; data: Product[] }
+        if (response.success) {
+          setProducts(response.data)
+          setTotal(response.data.length)
+        }
+      } else {
+        // Use regular search
+        const searchOptions: SearchOptions = {
+          query: searchQuery,
+          filters,
+          sortBy,
+          limit: 20,
+          offset: 0
+        }
+        
+        const result = await searchProducts(searchOptions)
+        setProducts(result.products)
+        setTotal(result.total)
+      }
+      setError(null)
+    } catch (error) {
+      console.error('Search error:', error)
+      setError('Search failed. Please try again.')
+    } finally {
+      setLoading(false)
     }
-    if (search) {
-      setSearchQuery(search)
-    }
-  }, [])
+  }, [searchQuery, filters, sortBy, useSemanticSearch])
 
-  useEffect(() => {
-    loadInitialData()
-  }, [])
-
-  useEffect(() => {
-    performSearch()
-  }, [searchQuery, filters, sortBy])
-
-  const loadInitialData = async () => {
+  const loadInitialData = useCallback(async () => {
     setLoading(true)
     setError(null)
     
@@ -78,30 +93,29 @@ export function Browse() {
       console.error('Error loading initial data:', error)
       setError('Failed to load data. Please try again.')
     }
-  }
+  }, [performSearch])
 
-  const performSearch = async () => {
-    try {
-      setLoading(true)
-      const searchOptions: SearchOptions = {
-        query: searchQuery,
-        filters,
-        sortBy,
-        limit: 20,
-        offset: 0
-      }
-      
-      const result = await searchProducts(searchOptions)
-      setProducts(result.products)
-      setTotal(result.total)
-      setError(null)
-    } catch (error) {
-      console.error('Search error:', error)
-      setError('Search failed. Please try again.')
-    } finally {
-      setLoading(false)
+  // Get URL parameters for initial filtering
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const category = urlParams.get('category')
+    const search = urlParams.get('search')
+    
+    if (category) {
+      setFilters(prev => ({ ...prev, category }))
     }
-  }
+    if (search) {
+      setSearchQuery(search)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadInitialData()
+  }, [loadInitialData])
+
+  useEffect(() => {
+    performSearch()
+  }, [performSearch])
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)
@@ -115,7 +129,7 @@ export function Browse() {
     }
   }
 
-  const handleFilterChange = (filterType: keyof SearchFilters, value: any) => {
+  const handleFilterChange = (filterType: keyof SearchFilters, value: string | number | boolean | { min: number; max: number } | undefined) => {
     setFilters(prev => ({
       ...prev,
       [filterType]: value || undefined
@@ -243,6 +257,17 @@ export function Browse() {
 
             {/* Controls */}
             <div className="flex gap-3 items-center flex-wrap">
+              {/* Semantic Search Toggle */}
+              <Button
+                variant={useSemanticSearch ? "default" : "outline"}
+                onClick={() => setUseSemanticSearch(!useSemanticSearch)}
+                className="flex items-center gap-2 px-4 py-2"
+                title="AI-powered semantic search for natural language queries"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span className="hidden sm:inline">AI Search</span>
+              </Button>
+
               {/* View Mode Toggle */}
               <div className="flex bg-gray-100 rounded-lg p-1">
                 <Button

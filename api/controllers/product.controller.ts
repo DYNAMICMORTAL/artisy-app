@@ -1,6 +1,7 @@
 import { Response } from 'express'
 import { AuthRequest } from '../types'
 import { supabaseAdmin } from '../config/supabase'
+import { getEmbedding } from '../utils/embedding'
 
 // Get all products with search and filter
 export const getProducts = async (req: AuthRequest, res: Response) => {
@@ -187,3 +188,160 @@ export const getFilterOptions = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch filter options' })
   }
 }
+
+// Semantic search for products using embeddings
+export const semanticSearch = async (req: AuthRequest, res: Response) => {
+  try {
+    const { query, limit = 20 } = req.body
+
+    if (!query || typeof query !== 'string') {
+      return res.status(400).json({ error: 'Query is required and must be a string' })
+    }
+
+    // Generate embedding for the search query
+    const queryEmbedding = await getEmbedding(query)
+
+    // Use pgvector similarity search in Supabase
+    // Note: This requires pgvector extension and embedding column in products table
+    const { data, error } = await supabaseAdmin.rpc('search_products_by_embedding', {
+      query_embedding: queryEmbedding,
+      match_threshold: 0.7,
+      match_count: Number(limit)
+    })
+
+    if (error) {
+      console.error('Semantic search error:', error)
+      return res.status(500).json({ error: error.message })
+    }
+
+    res.json({
+      success: true,
+      data: data || []
+    })
+  } catch (error) {
+    console.error('Semantic search error:', error)
+    res.status(500).json({ error: 'Failed to perform semantic search' })
+  }
+}
+
+// Add a review for a product
+export const addReview = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params
+    const { rating, review_text } = req.body
+    const user_id = req.user?.id
+
+    if (!user_id) {
+      return res.status(401).json({ error: 'User not authenticated' })
+    }
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating must be between 1 and 5' })
+    }
+
+    // Check if user already reviewed this product
+    const { data: existingReview } = await supabaseAdmin
+      .from('reviews')
+      .select('id')
+      .eq('product_id', id)
+      .eq('user_id', user_id)
+      .single()
+
+    if (existingReview) {
+      return res.status(400).json({ error: 'You have already reviewed this product' })
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('reviews')
+      .insert([{
+        product_id: id,
+        user_id,
+        rating: Number(rating),
+        review_text
+      }])
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Add review error:', error)
+      return res.status(500).json({ error: error.message })
+    }
+
+    // Update product average rating and review count
+    await updateProductRating(id)
+
+    res.json({
+      success: true,
+      data
+    })
+  } catch (error) {
+    console.error('Add review error:', error)
+    res.status(500).json({ error: 'Failed to add review' })
+  }
+}
+
+// Get reviews for a product
+export const getReviews = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params
+    const { limit = 20, offset = 0 } = req.query
+
+    const { data, error, count } = await supabaseAdmin
+      .from('reviews')
+      .select(`
+        *,
+        users:user_id (
+          id,
+          email
+        )
+      `, { count: 'exact' })
+      .eq('product_id', id)
+      .order('created_at', { ascending: false })
+      .range(Number(offset), Number(offset) + Number(limit) - 1)
+
+    if (error) {
+      console.error('Get reviews error:', error)
+      return res.status(500).json({ error: error.message })
+    }
+
+    res.json({
+      success: true,
+      data: data || [],
+      pagination: {
+        total: count || 0,
+        limit: Number(limit),
+        offset: Number(offset),
+        hasMore: (count || 0) > Number(offset) + Number(limit)
+      }
+    })
+  } catch (error) {
+    console.error('Get reviews error:', error)
+    res.status(500).json({ error: 'Failed to fetch reviews' })
+  }
+}
+
+// Helper function to update product rating
+async function updateProductRating(productId: string) {
+  try {
+    const { data: reviews } = await supabaseAdmin
+      .from('reviews')
+      .select('rating')
+      .eq('product_id', productId)
+
+    if (reviews && reviews.length > 0) {
+      const averageRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      const reviewCount = reviews.length
+
+      await supabaseAdmin
+        .from('products')
+        .update({
+          rating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
+          review_count: reviewCount
+        })
+        .eq('id', productId)
+    }
+  } catch (error) {
+    console.error('Update product rating error:', error)
+  }
+}
+

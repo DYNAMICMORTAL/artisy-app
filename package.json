@@ -12,7 +12,8 @@
     "api": "tsx api/index.ts",
     "api:dev": "tsx watch api/index.ts",
     "server": "tsx server/index.ts",
-    "server:dev": "tsx watch server/index.ts"
+    "server:dev": "tsx watch server/index.ts",
+    "generate-embeddings": "tsx scripts/generate-embeddings.ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
@@ -25,6 +26,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "lucide-react": "^0.544.0",
+    "openai": "^6.1.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.3",

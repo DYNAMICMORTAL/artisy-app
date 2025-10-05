@@ -6,18 +6,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Header } from '../components/Header'
 import { supabase } from '../lib/supabase'
 
+interface OrderItem {
+  image_url: string
+  name: string
+  quantity: number
+  price: number
+}
+
 interface Order {
   id: string
   amount: number
   status: string
-  items: any[]
+  items: OrderItem[]
   created_at: string
 }
 
 export function Orders() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
-  const [, setUser] = useState<any>(null)
+  const [ setUser] = useState<any>(null)
 
   useEffect(() => {
     checkUser()
@@ -148,7 +155,7 @@ export function Orders() {
                 <CardContent>
                   <div className="space-y-3">
                     <h4 className="font-medium">Items ({order.items.length})</h4>
-                    {order.items.map((item: any, index: number) => (
+                    {order.items.map((item: OrderItem, index: number) => (
                       <div key={index} className="flex gap-3 p-3 border rounded-lg">
                         <img
                           src={item.image_url}
