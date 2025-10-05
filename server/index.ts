@@ -40,6 +40,13 @@ app.get('/api/health', (req, res) => {
 // Create checkout session
 app.post('/api/create-checkout-session', async (req, res) => {
   try {
+    type CheckoutItem = {
+      name: string;
+      image_url: string;
+      price: number;
+      quantity: number;
+    };
+
     const { items, userEmail, userId } = req.body
 
     if (!items || !items.length) {
@@ -51,7 +58,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
     }
 
     // Calculate total amount
-    const totalAmount = items.reduce((sum: number, item: any) => {
+    const totalAmount = items.reduce((sum: number, item: CheckoutItem) => {
       return sum + (item.price * item.quantity)
     }, 0)
 
@@ -76,9 +83,9 @@ app.post('/api/create-checkout-session', async (req, res) => {
     }
 
     // Create Stripe line items
-    const lineItems = items.map((item: any) => ({
+    const lineItems = items.map((item: CheckoutItem) => ({
       price_data: {
-        currency: 'usd',
+        currency: 'inr',
         product_data: {
           name: item.name,
           images: [item.image_url],
@@ -150,7 +157,7 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
   // Handle the event
   try {
     switch (event.type) {
-      case 'checkout.session.completed':
+      case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
         console.log('Payment completed:', session.id)
 
@@ -169,8 +176,9 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
           console.log('Order status updated to paid')
         }
         break
+      }
 
-      case 'payment_intent.payment_failed':
+      case 'payment_intent.payment_failed': {
         const failedPayment = event.data.object as Stripe.PaymentIntent
         console.log('Payment failed:', failedPayment.id)
 
@@ -184,9 +192,11 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
             .eq('id', failedPayment.metadata.orderId)
         }
         break
+      }
 
-      default:
+      default: {
         console.log(`Unhandled event type ${event.type}`)
+      }
     }
   } catch (error) {
     console.error('Error handling webhook:', error)
@@ -197,11 +207,11 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
 })
 
 // Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: unknown, req: express.Request, res: express.Response) => {
   console.error('Server error:', err)
   res.status(500).json({ 
     error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : undefined
+    message: process.env.NODE_ENV === 'development' && err instanceof Error ? err.message : undefined
   })
 })
 

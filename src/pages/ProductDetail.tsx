@@ -133,7 +133,7 @@ export function ProductDetail() {
               </div>
               <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
               <p className="text-4xl font-bold text-primary mb-6">
-                ${product.price}
+                ₹{product.price}
               </p>
             </div>
 

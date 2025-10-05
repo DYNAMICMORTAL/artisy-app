@@ -83,7 +83,7 @@ export function OrderSuccess() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Total Amount</p>
-                    <p className="font-bold">${order.amount.toFixed(2)}</p>
+                    <p className="font-bold">₹{order.amount.toFixed(2)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Status</p>
@@ -101,7 +101,7 @@ export function OrderSuccess() {
                     {order.items.map((item: any, index: number) => (
                       <div key={index} className="flex justify-between text-sm">
                         <span>{item.name} × {item.quantity}</span>
-                        <span>${(item.price * item.quantity).toFixed(2)}</span>
+                        <span>₹{(item.price * item.quantity).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>

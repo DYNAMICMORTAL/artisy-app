@@ -1,164 +1,326 @@
-# 🎨 Artisy - E-Commerce Platform for Artists# React + TypeScript + Vite
+# Artisy App - Complete E-Commerce Platform# 🎨 Artisy - E-Commerce Platform for Artists# React + TypeScript + Vite
 
 
 
-A modern, full-stack e-commerce platform built with React 18, Vite, TypeScript, Supabase, and Stripe. Designed specifically for artists to sell their artwork online with a beautiful, responsive interface and secure payment processing.This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack e-commerce application for handcrafted Indian art and crafts, featuring a React frontend and Express.js backend API.
 
 
 
-## ✨ FeaturesCurrently, two official plugins are available:
+## 🚀 FeaturesA modern, full-stack e-commerce platform built with React 18, Vite, TypeScript, Supabase, and Stripe. Designed specifically for artists to sell their artwork online with a beautiful, responsive interface and secure payment processing.This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 
 
-### 🛍️ For Customers- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- **Product Catalog**: Browse and search art products with advanced filtering
 
-- **Browse Artwork**: Discover beautiful artwork across multiple categories (Paintings, Sculptures, Photography)- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Shopping Cart**: Add/remove items, update quantities
 
-- **Advanced Search**: Find specific pieces with powerful search and filtering capabilities
+- **Wishlist**: Save favorite products## ✨ FeaturesCurrently, two official plugins are available:
 
-- **Shopping Cart**: Add items, manage quantities, and track total prices in real-time## React Compiler
+- **User Authentication**: Sign up, login with Supabase Auth
 
-- **Secure Checkout**: Stripe-powered payment processing with guest and user checkout options
+- **Secure Payments**: Stripe integration for checkout
 
-- **Order Tracking**: View order history and status for registered usersThe React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Order Management**: View order history and status
 
-- **Responsive Design**: Seamless experience across desktop, tablet, and mobile devices
+- **Responsive Design**: Mobile-friendly UI with Tailwind CSS### 🛍️ For Customers- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
 
-## Expanding the ESLint configuration
 
-### 🎨 For Artists/Admins
 
-- **Product Management**: Easy-to-manage product database via Supabase dashboardIf you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 📁 Project Structure- **Browse Artwork**: Discover beautiful artwork across multiple categories (Paintings, Sculptures, Photography)- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-- **Order Management**: Real-time order tracking and automatic status updates
 
-- **Payment Tracking**: Complete integration with Stripe payments and webhooks```js
 
-- **User Analytics**: Understanding customer behavior through Supabase analyticsexport default defineConfig([
+```- **Advanced Search**: Find specific pieces with powerful search and filtering capabilities
 
-  globalIgnores(['dist']),
+artisy-app/
 
-### 🔒 Security & Performance  {
+├── api/                    # Backend API (Express + TypeScript)- **Shopping Cart**: Add items, manage quantities, and track total prices in real-time## React Compiler
 
-- **Row Level Security**: Database-level security with Supabase RLS policies    files: ['**/*.{ts,tsx}'],
+│   ├── controllers/        # Business logic
 
-- **Environment Variables**: Secure API key management with client/server separation    extends: [
+│   ├── routes/            # API routes- **Secure Checkout**: Stripe-powered payment processing with guest and user checkout options
 
-- **Real-time Updates**: Webhook-powered order status synchronization      // Other configs...
+│   ├── middleware/        # Auth, error handling, logging
 
-- **Optimized Loading**: Image lazy loading and efficient state management
+│   ├── config/            # Supabase, Stripe configuration- **Order Tracking**: View order history and status for registered usersThe React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-      // Remove tseslint.configs.recommended and replace with this
+│   └── types/             # TypeScript types
 
-## 🚀 Quick Start      tseslint.configs.recommendedTypeChecked,
+├── src/                   # Frontend (React + TypeScript)- **Responsive Design**: Seamless experience across desktop, tablet, and mobile devices
 
-      // Alternatively, use this for stricter rules
+│   ├── components/        # UI components
 
-### Prerequisites      tseslint.configs.strictTypeChecked,
+│   ├── pages/            # Route pages## Expanding the ESLint configuration
 
-- Node.js 18+ and npm      // Optionally, add this for stylistic rules
+│   ├── lib/              # API client, utilities
 
-- Supabase account and project      tseslint.configs.stylisticTypeChecked,
+│   └── store/            # Zustand state management### 🎨 For Artists/Admins
 
-- Stripe account (test mode for development)
+├── vercel.json           # Vercel deployment config
 
-      // Other configs...
-
-### Installation    ],
-
-    languageOptions: {
-
-1. **Clone and Setup**      parserOptions: {
-
-```bash        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-
-git clone <repository-url>        tsconfigRootDir: import.meta.dirname,
-
-cd artisy-app      },
-
-npm install      // other options...
-
-```    },
-
-  },
-
-2. **Environment Configuration**])
-
-```bash```
-
-cp .env.example .env
-
-# Fill in your Supabase and Stripe credentialsYou can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+└── package.json          # Dependencies- **Product Management**: Easy-to-manage product database via Supabase dashboardIf you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
 ```
 
+- **Order Management**: Real-time order tracking and automatic status updates
+
+## 🛠️ Tech Stack
+
+- **Payment Tracking**: Complete integration with Stripe payments and webhooks```js
+
+**Frontend:**
+
+- React 19 + TypeScript- **User Analytics**: Understanding customer behavior through Supabase analyticsexport default defineConfig([
+
+- Vite (build tool)
+
+- Tailwind CSS  globalIgnores(['dist']),
+
+- React Router v7
+
+- Zustand (state management)### 🔒 Security & Performance  {
+
+
+
+**Backend:**- **Row Level Security**: Database-level security with Supabase RLS policies    files: ['**/*.{ts,tsx}'],
+
+- Node.js + Express
+
+- TypeScript- **Environment Variables**: Secure API key management with client/server separation    extends: [
+
+- Supabase (PostgreSQL + Auth)
+
+- Stripe (payments)- **Real-time Updates**: Webhook-powered order status synchronization      // Other configs...
+
+
+
+## 🚦 Quick Start- **Optimized Loading**: Image lazy loading and efficient state management
+
+
+
+### Prerequisites      // Remove tseslint.configs.recommended and replace with this
+
+- Node.js 18+
+
+- npm or yarn## 🚀 Quick Start      tseslint.configs.recommendedTypeChecked,
+
+- Supabase account
+
+- Stripe account      // Alternatively, use this for stricter rules
+
+
+
+### Installation### Prerequisites      tseslint.configs.strictTypeChecked,
+
+
+
+1. **Clone and install dependencies**- Node.js 18+ and npm      // Optionally, add this for stylistic rules
+
+```bash
+
+git clone <repo-url>- Supabase account and project      tseslint.configs.stylisticTypeChecked,
+
+cd artisy-app
+
+npm install- Stripe account (test mode for development)
+
+```
+
+      // Other configs...
+
+2. **Set up environment variables**
+
+```bash### Installation    ],
+
+cp .env.example .env
+
+```    languageOptions: {
+
+Edit `.env` with your API keys.
+
+1. **Clone and Setup**      parserOptions: {
+
+3. **Run the application**
+
+```bash```bash        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+
+# Run both frontend and backend
+
+npm run dev:allgit clone <repository-url>        tsconfigRootDir: import.meta.dirname,
+
+
+
+# Or run separately:cd artisy-app      },
+
+npm run dev      # Frontend only
+
+npm run api:dev  # Backend onlynpm install      // other options...
+
+```
+
+```    },
+
+4. **Access the application**
+
+- Frontend: http://localhost:5173  },
+
+- Backend API: http://localhost:3001
+
+2. **Environment Configuration**])
+
+## 🔑 Environment Variables
+
+```bash```
+
+See `.env.example` for all required variables:
+
+cp .env.example .env
+
+- **Supabase**: URL, anon key, service role key
+
+- **Stripe**: Publishable key, secret key, webhook secret# Fill in your Supabase and Stripe credentialsYou can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+
+- **URLs**: Frontend URL, API URL
+
+```
+
+## 📡 API Endpoints
+
 ```js
+
+All endpoints are prefixed with `/api`:
 
 3. **Database Setup**// eslint.config.js
 
-```sqlimport reactX from 'eslint-plugin-react-x'
+- `POST /api/auth/signup` - Create account
 
--- Run the SQL scripts in your Supabase dashboardimport reactDom from 'eslint-plugin-react-dom'
+- `POST /api/auth/login` - Sign in```sqlimport reactX from 'eslint-plugin-react-x'
 
--- 1. Execute database/schema.sql
+- `GET /api/products` - List products (with filters)
 
--- 2. Execute database/seed.sqlexport default defineConfig([
+- `GET /api/products/:id` - Get product details-- Run the SQL scripts in your Supabase dashboardimport reactDom from 'eslint-plugin-react-dom'
 
-```  globalIgnores(['dist']),
+- `GET /api/cart` - Get user cart (auth required)
 
-  {
+- `POST /api/cart/items` - Add to cart (auth required)-- 1. Execute database/schema.sql
 
-4. **Start Development Servers**    files: ['**/*.{ts,tsx}'],
+- `GET /api/wishlist` - Get wishlist (auth required)
 
-```bash    extends: [
+- `POST /api/orders/checkout` - Create checkout session-- 2. Execute database/seed.sqlexport default defineConfig([
 
-# Terminal 1: Frontend (Vite)      // Other configs...
+- `GET /api/orders` - Get order history (auth required)
 
-npm run dev      // Enable lint rules for React
+- `POST /api/payments/webhook` - Stripe webhook```  globalIgnores(['dist']),
 
-      reactX.configs['recommended-typescript'],
+
+
+See `API_README.md` for complete documentation.  {
+
+
+
+## 🚀 Deployment4. **Start Development Servers**    files: ['**/*.{ts,tsx}'],
+
+
+
+### Deploy to Vercel```bash    extends: [
+
+
+
+1. Install Vercel CLI: `npm i -g vercel`# Terminal 1: Frontend (Vite)      // Other configs...
+
+2. Login: `vercel login`
+
+3. Deploy: `vercel --prod`npm run dev      // Enable lint rules for React
+
+4. Add environment variables in Vercel dashboard
+
+5. Update `VITE_API_URL` and `VITE_SITE_URL` to Vercel URLs      reactX.configs['recommended-typescript'],
+
+6. Configure Stripe webhook with Vercel URL
 
 # Terminal 2: Backend API (Express)      // Enable lint rules for React DOM
 
+## 📚 Documentation
+
 npm run server:dev      reactDom.configs.recommended,
 
-```    ],
+- **API Documentation**: See `API_README.md`
+
+- **Database Schema**: See `API_README.md` → Database Schema section```    ],
+
+- **Stripe Integration**: See `API_README.md` → Stripe Integration section
 
     languageOptions: {
 
+## 🧪 Testing
+
 5. **Test Stripe Webhooks (Optional)**      parserOptions: {
 
-```bash        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+**Test Stripe Payments:**
 
-# Terminal 3: Stripe CLI        tsconfigRootDir: import.meta.dirname,
+- Success card: `4242 4242 4242 4242````bash        project: ['./tsconfig.node.json', './tsconfig.app.json'],
 
-stripe listen --forward-to localhost:3001/api/webhook      },
+- Decline card: `4000 0000 0000 0002`
 
-```      // other options...
+- Use any future date and any 3-digit CVC# Terminal 3: Stripe CLI        tsconfigRootDir: import.meta.dirname,
 
-    },
 
-Visit `http://localhost:5173` to see the application!  },
+
+## 🔒 Securitystripe listen --forward-to localhost:3001/api/webhook      },
+
+
+
+- ✅ Environment variables not committed```      // other options...
+
+- ✅ Service role key only on backend
+
+- ✅ JWT authentication for protected routes    },
+
+- ✅ CORS configured for frontend domain
+
+- ✅ Stripe webhook signature verificationVisit `http://localhost:5173` to see the application!  },
+
+- ✅ Input validation on all endpoints
 
 ])
 
+## 🐛 Troubleshooting
+
 ## 🛠️ Tech Stack```
 
+**Backend won't start:**
 
-### Frontend
-- **React 18** - Modern React with hooks and concurrent features
+- Check environment variables are set
+
+- Verify port 3001 is available### Frontend
+
+- Check Supabase/Stripe credentials- **React 18** - Modern React with hooks and concurrent features
+
 - **TypeScript** - Type-safe development
-- **Vite** - Lightning-fast build tool and dev server
-- **Tailwind CSS** - Utility-first CSS framework
-- **ShadCN UI** - Beautiful, accessible component library
-- **Zustand** - Lightweight state management for cart
+
+**Frontend can't connect:**- **Vite** - Lightning-fast build tool and dev server
+
+- Verify `VITE_API_URL` is correct- **Tailwind CSS** - Utility-first CSS framework
+
+- Check backend is running- **ShadCN UI** - Beautiful, accessible component library
+
+- Check browser console for CORS errors- **Zustand** - Lightweight state management for cart
+
 - **React Router** - Client-side routing
 
+## 📄 License
+
 ### Backend
-- **Express.js** - Node.js web application framework
+
+MIT- **Express.js** - Node.js web application framework
+
 - **Supabase** - Backend-as-a-service with PostgreSQL
-- **Stripe** - Payment processing and webhooks
+
+## 🙏 Credits- **Stripe** - Payment processing and webhooks
+
 - **TypeScript** - Full-stack type safety
+
+Built with React, Express, Supabase, Stripe, and TypeScript.
 
 ## 📁 Project Structure
 

@@ -137,7 +137,7 @@ export function Orders() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold">${order.amount.toFixed(2)}</p>
+                      <p className="text-lg font-bold">₹{order.amount.toFixed(2)}</p>
                       <p className={`text-sm font-medium capitalize ${getStatusColor(order.status)}`}>
                         {order.status}
                       </p>
@@ -161,7 +161,7 @@ export function Orders() {
                             Quantity: {item.quantity}
                           </p>
                           <p className="text-sm font-medium">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            ₹{(item.price * item.quantity).toFixed(2)}
                           </p>
                         </div>
                       </div>

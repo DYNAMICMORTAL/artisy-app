@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Input } from '../components/ui/input'
 import { useCartStore } from '../store/cart'
 import { supabase } from '../lib/supabase'
+import { orderAPI } from '../lib/api'
 import { Header } from '../components/Header'
 import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -11,7 +12,7 @@ import { Link } from 'react-router-dom'
 export function Checkout() {
   const { items, getTotal } = useCartStore()
   const [loading, setLoading] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<import('@supabase/supabase-js').User | null>(null)
   const [guestEmail, setGuestEmail] = useState('')
 
   useEffect(() => {
@@ -25,30 +26,21 @@ export function Checkout() {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:3001/api/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          items,
-          userEmail: user?.email || guestEmail,
-          userId: user?.id || null,
-        }),
-      })
+      const response = await orderAPI.createCheckout(
+        items,
+        user?.email || guestEmail,
+        user?.id
+      ) as { success: boolean; data?: { checkoutUrl: string } }
 
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session')
+      if (response.data?.checkoutUrl) {
+        // Redirect to Stripe checkout
+        window.location.href = response.data.checkoutUrl
+      } else {
+        throw new Error('No checkout URL received')
       }
-
-      const { checkoutUrl } = await response.json()
-      
-      // Redirect to Stripe checkout
-      window.location.href = checkoutUrl
-
     } catch (error) {
       console.error('Error:', error)
-      alert('Something went wrong. Please try again.')
+      alert(error instanceof Error ? error.message : 'Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -102,10 +94,10 @@ export function Checkout() {
                   <div className="flex-1">
                     <h4 className="font-medium">{item.name}</h4>
                     <p className="text-sm text-muted-foreground">
-                      ${item.price} × {item.quantity}
+                      ₹{item.price} × {item.quantity}
                     </p>
                     <p className="font-medium">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      ₹{(item.price * item.quantity).toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -114,7 +106,7 @@ export function Checkout() {
               <div className="border-t pt-4">
                 <div className="flex justify-between items-center text-lg font-bold">
                   <span>Total:</span>
-                  <span>${getTotal().toFixed(2)}</span>
+                  <span>₹{getTotal().toFixed(2)}</span>
                 </div>
               </div>
             </CardContent>
@@ -173,7 +165,7 @@ export function Checkout() {
                   className="w-full"
                   size="lg"
                 >
-                  {loading ? 'Processing...' : `Pay $${getTotal().toFixed(2)}`}
+                  {loading ? 'Processing...' : `Pay ₹${getTotal().toFixed(2)}`}
                 </Button>
 
                 <div className="text-xs text-muted-foreground space-y-1">
