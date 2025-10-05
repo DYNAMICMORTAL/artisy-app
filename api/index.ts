@@ -9,6 +9,9 @@ app.use(cors({
   credentials: true
 }))
 
+// Raw body middleware for webhook verification (must be before express.json())
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }))
+
 app.use(express.json())
 
 // Simple root route that always works
@@ -65,38 +68,44 @@ app.get('/api/test', async (_req: Request, res: Response) => {
   }
 })
 
-// Try to load routes (with error handling)
-try {
-  // Import routes asynchronously to catch any import errors
-  import('./routes/auth.routes.js').then(({ default: authRoutes }) => {
+// Load routes synchronously using top-level await pattern
+// This ensures routes are registered before the 404 handler
+;(async () => {
+  try {
+    // Import and register auth routes
+    const { default: authRoutes } = await import('./routes/auth.routes.js')
     app.use('/api/auth', authRoutes)
-  }).catch(err => console.error('Failed to load auth routes:', err))
+    console.log('✅ Auth routes loaded')
 
-  import('./routes/product.routes.js').then(({ default: productRoutes }) => {
+    // Import and register product routes
+    const { default: productRoutes } = await import('./routes/product.routes.js')
     app.use('/api/products', productRoutes)
-  }).catch(err => console.error('Failed to load product routes:', err))
+    console.log('✅ Product routes loaded')
 
-  import('./routes/cart.routes.js').then(({ default: cartRoutes }) => {
+    // Import and register cart routes
+    const { default: cartRoutes } = await import('./routes/cart.routes.js')
     app.use('/api/cart', cartRoutes)
-  }).catch(err => console.error('Failed to load cart routes:', err))
+    console.log('✅ Cart routes loaded')
 
-  import('./routes/wishlist.routes.js').then(({ default: wishlistRoutes }) => {
+    // Import and register wishlist routes
+    const { default: wishlistRoutes } = await import('./routes/wishlist.routes.js')
     app.use('/api/wishlist', wishlistRoutes)
-  }).catch(err => console.error('Failed to load wishlist routes:', err))
+    console.log('✅ Wishlist routes loaded')
 
-  import('./routes/order.routes.js').then(({ default: orderRoutes }) => {
+    // Import and register order routes
+    const { default: orderRoutes } = await import('./routes/order.routes.js')
     app.use('/api/orders', orderRoutes)
-  }).catch(err => console.error('Failed to load order routes:', err))
+    console.log('✅ Order routes loaded')
 
-  import('./routes/payment.routes.js').then(({ default: paymentRoutes }) => {
-    // Raw body for webhook must be set before this route
-    app.use('/api/payments/webhook', express.raw({ type: 'application/json' }))
+    // Import and register payment routes
+    const { default: paymentRoutes } = await import('./routes/payment.routes.js')
     app.use('/api/payments', paymentRoutes)
-  }).catch(err => console.error('Failed to load payment routes:', err))
+    console.log('✅ Payment routes loaded')
 
-} catch (error) {
-  console.error('Error loading routes:', error)
-}
+  } catch (error) {
+    console.error('❌ Error loading routes:', error)
+  }
+})()
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
@@ -108,6 +117,7 @@ app.use((_req: Request, res: Response) => {
 })
 
 // Error handling middleware
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: Error, _req: Request, res: Response, _next: unknown) => {
   console.error('Error:', err)
   res.status(500).json({
