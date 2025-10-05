@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useLocation } from 'react-router-dom'
 import { ProductCard } from '../components/ProductCard'
 import { Header } from '../components/Header'
 import { ShoppingCart } from '../components/ShoppingCart'
@@ -38,6 +39,7 @@ export function Browse() {
   const [error, setError] = useState<string | null>(null)
   
   const { isOpen, toggleCart } = useCartStore()
+  const location = useLocation()
 
   // Define functions before they are used in useEffect
   const performSearch = useCallback(async () => {
@@ -95,19 +97,27 @@ export function Browse() {
     }
   }, [performSearch])
 
-  // Get URL parameters for initial filtering
+  // Get URL parameters for initial filtering and listen to location changes
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
+    const urlParams = new URLSearchParams(location.search)
     const category = urlParams.get('category')
     const search = urlParams.get('search')
     
-    if (category) {
-      setFilters(prev => ({ ...prev, category }))
-    }
+    // Update filters when URL parameters change
+    setFilters(prev => {
+      const newFilters = { ...prev }
+      if (category) {
+        newFilters.category = category
+      } else {
+        delete newFilters.category
+      }
+      return newFilters
+    })
+    
     if (search) {
       setSearchQuery(search)
     }
-  }, [])
+  }, [location.search]) // Re-run when location.search changes
 
   useEffect(() => {
     loadInitialData()

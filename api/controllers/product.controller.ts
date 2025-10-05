@@ -286,15 +286,10 @@ export const getReviews = async (req: AuthRequest, res: Response) => {
     const { id } = req.params
     const { limit = 20, offset = 0 } = req.query
 
-    const { data, error, count } = await supabaseAdmin
+    // First get reviews
+    const { data: reviews, error, count } = await supabaseAdmin
       .from('reviews')
-      .select(`
-        *,
-        users:user_id (
-          id,
-          email
-        )
-      `, { count: 'exact' })
+      .select('*', { count: 'exact' })
       .eq('product_id', id)
       .order('created_at', { ascending: false })
       .range(Number(offset), Number(offset) + Number(limit) - 1)
@@ -304,9 +299,25 @@ export const getReviews = async (req: AuthRequest, res: Response) => {
       return res.status(500).json({ error: error.message })
     }
 
+    // Then get user data for each review separately
+    const reviewsWithUsers = await Promise.all(
+      (reviews || []).map(async (review) => {
+        const { data: user } = await supabaseAdmin
+          .from('users')
+          .select('id, email')
+          .eq('id', review.user_id)
+          .single()
+        
+        return {
+          ...review,
+          users: user
+        }
+      })
+    )
+
     res.json({
       success: true,
-      data: data || [],
+      data: reviewsWithUsers,
       pagination: {
         total: count || 0,
         limit: Number(limit),

@@ -57,53 +57,53 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
 
   return (
     <Card 
-      className="cursor-pointer hover-lift transition-smooth group bg-white border-gray-100 overflow-hidden rounded-xl shadow-soft hover:shadow-elegant"
+      className="cursor-pointer hover-lift transition-smooth group bg-white border-0 overflow-hidden rounded-xl card-premium"
       onClick={onClick}
     >
       <CardContent className="p-0">
-        <div className="aspect-square overflow-hidden relative">
+        <div className="aspect-square overflow-hidden relative image-zoom-container">
           <img
             src={product.image_url}
             alt={product.name}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            className="h-full w-full object-cover image-zoom"
             loading="lazy"
           />
-          {/* Gradient overlay on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          {/* Elegant gradient overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
           
-          {/* Overlay badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-2">
+          {/* Overlay badges with premium styling */}
+          <div className="absolute top-4 left-4 flex flex-col gap-2">
             {product.is_featured && (
-              <span className="bg-gray-900/90 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1 animate-scale-in">
-                <Award className="w-3 h-3" />
+              <span className="backdrop-blur-glass bg-white/10 border border-white/20 text-white text-xs px-3 py-1.5 rounded-full font-medium flex items-center gap-1.5 animate-fade-in-up shadow-premium">
+                <Award className="w-3.5 h-3.5 text-gallery-gold" />
                 Featured
               </span>
             )}
             {product.is_handmade && (
-              <span className="bg-green-600 text-white text-xs px-2 py-1 rounded font-semibold flex items-center gap-1">
-                <Palette className="w-3 h-3" />
+              <span className="backdrop-blur-glass bg-white/10 border border-white/20 text-white text-xs px-3 py-1.5 rounded-full font-medium flex items-center gap-1.5 animate-fade-in-up shadow-soft">
+                <Palette className="w-3.5 h-3.5" />
                 Handmade
               </span>
             )}
             {hasDiscount && (
-              <span className="bg-red-600 text-white text-xs px-2 py-1 rounded font-semibold">
+              <span className="bg-red-600 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-soft animate-fade-in-up">
                 {Math.round(((product.original_price! - product.price) / product.original_price!) * 100)}% OFF
               </span>
             )}
           </div>
           
-          {/* Quick Action Buttons */}
-          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+          {/* Quick Action Buttons with premium hover effects */}
+          <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
             <div className="flex flex-col gap-2">
               <button 
                 onClick={handleWishlistToggle}
-                className="bg-white/90 hover:bg-white p-2 rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-110"
+                className="backdrop-blur-glass bg-white/95 hover:bg-white p-2.5 rounded-full shadow-elegant hover:shadow-premium backdrop-blur-sm transition-all duration-300 hover:scale-110 border border-white/20"
                 title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
               >
                 <Heart 
-                  className={`w-4 h-4 transition-all duration-200 ${
+                  className={`w-4.5 h-4.5 transition-all duration-300 ${
                     isWishlisted 
-                      ? 'text-red-500 fill-red-500' 
+                      ? 'text-red-500 fill-red-500 scale-110' 
                       : 'text-gray-600 hover:text-red-500'
                   }`} 
                 />
@@ -112,85 +112,91 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
           </div>
         </div>
         
-        <div className="p-4">
-          {/* Artist and Origin */}
-          <div className="flex items-center justify-between mb-2 text-xs text-gray-500">
+        <div className="p-5">
+          {/* Artist and Origin with premium styling */}
+          <div className="flex items-center justify-between mb-2.5 text-xs text-gray-500">
             {product.artist_name && (
-              <span className="font-medium">by {product.artist_name}</span>
+              <span className="font-medium tracking-wide">by {product.artist_name}</span>
             )}
             {product.origin_state && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 bg-gallery-cream px-2 py-1 rounded-full">
                 <MapPin className="w-3 h-3" />
-                <span>{product.origin_state}</span>
+                <span className="font-medium">{product.origin_state}</span>
               </div>
             )}
           </div>
 
-          <h3 className="font-semibold text-lg mb-1 line-clamp-2 text-gray-800">
+          <h3 className="font-display font-semibold text-lg mb-1.5 line-clamp-2 text-gray-900 group-hover:text-gallery-charcoal transition-colors">
             {product.name}
           </h3>
 
-          {/* Art Form */}
+          {/* Art Form with premium badge */}
           {product.art_form && (
-            <p className="text-sm text-gray-600 font-medium mb-2">
+            <p className="text-sm text-gallery-bronze font-medium mb-2.5 tracking-wide">
               {product.art_form}
             </p>
           )}
 
-          {/* Rating */}
+          {/* Rating with gold stars */}
           {product.rating && product.rating > 0 && (
-            <div className="flex items-center gap-1 mb-2">
-              <div className="flex">
+            <div className="flex items-center gap-1.5 mb-3">
+              <div className="flex gap-0.5">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star
                     key={star}
-                    className={`w-3 h-3 ${
+                    className={`w-3.5 h-3.5 transition-colors ${
                       star <= Math.floor(product.rating!)
-                        ? 'text-yellow-400 fill-current'
+                        ? 'text-gallery-gold fill-gallery-gold'
                         : 'text-gray-300'
                     }`}
                   />
                 ))}
               </div>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-500 font-medium">
                 ({product.review_count || 0})
               </span>
             </div>
           )}
 
-          {/* Price */}
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <span className="text-xl font-bold text-gray-800">
+          {/* Price with premium styling */}
+          <div className="flex items-baseline justify-between mb-3">
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-display font-bold text-gallery-charcoal">
                 {formatPrice(product.price)}
               </span>
               {hasDiscount && (
-                <span className="text-sm text-gray-500 line-through ml-2">
+                <span className="text-sm text-gray-400 line-through font-medium">
                   {formatPrice(product.original_price!)}
                 </span>
               )}
             </div>
-            <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded font-medium">
+            <span className="text-xs bg-gallery-cream text-gallery-charcoal px-3 py-1.5 rounded-full font-medium tracking-wide">
               {product.subcategory || product.category}
             </span>
           </div>
 
-          {/* Material and Dimensions */}
-          <div className="text-xs text-gray-500 space-y-1">
+          {/* Material and Dimensions with premium styling */}
+          <div className="text-xs text-gray-500 space-y-1.5 border-t border-gallery-stone pt-3">
             {product.material && (
-              <p>Material: {product.material}</p>
+              <p className="flex items-center gap-2">
+                <span className="font-medium text-gray-700">Material:</span>
+                <span>{product.material}</span>
+              </p>
             )}
             {product.dimensions && (
-              <p>Size: {product.dimensions}</p>
+              <p className="flex items-center gap-2">
+                <span className="font-medium text-gray-700">Size:</span>
+                <span>{product.dimensions}</span>
+              </p>
             )}
           </div>
         </div>
       </CardContent>
       
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="p-5 pt-0">
         <Button 
           onClick={handleAddToCart}
-          className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium transition-smooth opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0"
+          className="w-full bg-gallery-charcoal hover:bg-gallery-charcoal/90 text-white font-medium tracking-wide transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 shadow-soft hover:shadow-elegant rounded-lg py-6 text-base"
           size="sm"
         >
           Add to Cart
