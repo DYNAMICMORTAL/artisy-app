@@ -1,7 +1,6 @@
 {
   "name": "artisy-api",
   "version": "1.0.0",
-  "type": "module",
   "description": "Artisy App Backend API",
   "main": "index.ts",
   "scripts": {
