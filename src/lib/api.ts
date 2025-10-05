@@ -1,5 +1,6 @@
 // API Client for Artisy App Backend
 
+// Use VITE_API_URL for backend URL (should point to your separate backend deployment)
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
 // Helper to get auth token

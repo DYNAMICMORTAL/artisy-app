@@ -1,0 +1,15 @@
+# Ignore backend files in frontend deployment
+api/
+scripts/
+*.md
+!README.md
+
+# Development files
+node_modules
+.env
+.env.local
+*.log
+.DS_Store
+
+# TypeScript
+*.tsbuildinfo

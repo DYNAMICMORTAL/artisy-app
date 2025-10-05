@@ -1,4 +1,4 @@
-import { ShoppingCart, Search, Menu, User, LogOut } from 'lucide-react'
+import { ShoppingCart, Search, Menu } from 'lucide-react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { useCartStore } from '../store/cart'
@@ -11,7 +11,7 @@ interface HeaderProps {
   onCategorySelect?: (category: string) => void
 }
 
-export function Header({ onSearch, onCategorySelect }: HeaderProps) {
+export function Header({ onSearch }: HeaderProps) {
   const { getTotalItems, toggleCart } = useCartStore()
   const [searchQuery, setSearchQuery] = useState('')
   const [user, setUser] = useState<any>(null)
