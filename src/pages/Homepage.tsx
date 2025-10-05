@@ -128,7 +128,7 @@ export function Homepage() {
               <Link to="/browse?category=paintings" className="block card-premium overflow-hidden rounded-2xl border-0">
                 <div className="relative overflow-hidden aspect-[4/5] image-zoom-container">
                   <img 
-                    src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=500&fit=crop"
+                    src="https://images.unsplash.com/photo-1713986720216-4abc6d414c82?q=80&w=680&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt="Traditional Paintings"
                     className="w-full h-full object-cover image-zoom"
                   />
@@ -157,7 +157,7 @@ export function Homepage() {
               <Link to="/browse?category=sculptures" className="block card-premium overflow-hidden rounded-2xl border-0">
                 <div className="relative overflow-hidden aspect-[4/5] image-zoom-container">
                   <img 
-                    src="https://images.unsplash.com/photo-1594736797933-d0803ba72303?w=400&h=500&fit=crop"
+                    src="https://images.unsplash.com/photo-1753439159487-4e5a70f67ba2?q=80&w=633&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt="Sculptures"
                     className="w-full h-full object-cover image-zoom"
                   />
@@ -186,7 +186,7 @@ export function Homepage() {
               <Link to="/browse?category=photography" className="block card-premium overflow-hidden rounded-2xl border-0">
                 <div className="relative overflow-hidden aspect-[4/5] image-zoom-container">
                   <img 
-                    src="https://images.unsplash.com/photo-1577083288073-40892c0860cf?w=400&h=500&fit=crop"
+                    src="https://images.unsplash.com/photo-1643614331150-37823121afce?q=80&w=627&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt="Photography"
                     className="w-full h-full object-cover image-zoom"
                   />
