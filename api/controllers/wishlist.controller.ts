@@ -1,6 +1,6 @@
 import { Response } from 'express'
-import { AuthRequest } from '../types'
-import { supabaseAdmin } from '../config/supabase'
+import { AuthRequest } from '../types/index.js'
+import { supabaseAdmin } from '../config/supabase.js'
 
 // Get user's wishlist
 export const getWishlist = async (req: AuthRequest, res: Response) => {

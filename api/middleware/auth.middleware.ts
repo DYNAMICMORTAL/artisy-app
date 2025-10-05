@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express'
-import { AuthRequest } from '../types'
-import { supabaseAdmin } from '../config/supabase'
+import { AuthRequest } from '../types/index.js'
+import { supabaseAdmin } from '../config/supabase.js'
 
 export const authenticate = async (
   req: AuthRequest,

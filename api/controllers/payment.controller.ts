@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import Stripe from 'stripe'
-import { stripe } from '../config/stripe'
-import { supabaseAdmin } from '../config/supabase'
+import { stripe } from '../config/stripe.js'
+import { supabaseAdmin } from '../config/supabase.js'
 
 // Stripe webhook handler
 export const handleWebhook = async (req: Request, res: Response) => {

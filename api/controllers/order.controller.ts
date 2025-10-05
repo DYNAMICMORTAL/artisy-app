@@ -1,7 +1,7 @@
 import { Response } from 'express'
-import { AuthRequest } from '../types'
-import { supabaseAdmin } from '../config/supabase'
-import { stripe } from '../config/stripe'
+import { AuthRequest } from '../types/index.js'
+import { supabaseAdmin } from '../config/supabase.js'
+import { stripe } from '../config/stripe.js'
 
 // Create checkout session
 export const createCheckout = async (req: AuthRequest, res: Response) => {

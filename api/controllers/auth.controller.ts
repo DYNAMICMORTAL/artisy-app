@@ -1,6 +1,6 @@
 import { Response } from 'express'
-import { AuthRequest } from '../types'
-import { supabaseAdmin } from '../config/supabase'
+import { AuthRequest } from '../types/index.js'
+import { supabaseAdmin } from '../config/supabase.js'
 
 // Sign up
 export const signup = async (req: AuthRequest, res: Response) => {

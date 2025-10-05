@@ -1,7 +1,7 @@
 import { Response } from 'express'
-import { AuthRequest } from '../types'
-import { supabaseAdmin } from '../config/supabase'
-import { getEmbedding } from '../utils/embedding'
+import { AuthRequest } from '../types/index.js'
+import { supabaseAdmin } from '../config/supabase.js'
+import { getEmbedding } from '../utils/embedding.js'
 
 // Get all products with search and filter
 export const getProducts = async (req: AuthRequest, res: Response) => {

@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import { createCheckout, getOrders, getOrderById, getOrderStatus } from '../controllers/order.controller'
-import { authenticate, optionalAuth } from '../middleware/auth.middleware'
+import { createCheckout, getOrders, getOrderById, getOrderStatus } from '../controllers/order.controller.js'
+import { authenticate, optionalAuth } from '../middleware/auth.middleware.js'
 
 const router = Router()
 
