@@ -29,12 +29,24 @@ app.use('/api/payments/webhook', express.raw({ type: 'application/json' }))
 // JSON middleware for other routes
 app.use(express.json())
 
+// Root route
+app.get('/', (_req, res) => {
+  res.json({ 
+    message: 'Artisy API',
+    version: '1.0.0',
+    status: 'running'
+  })
+})
+
 // Health check endpoint
 app.get('/api/health', (_req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
+    hasOpenAIKey: !!process.env.OPENAI_API_KEY
   })
 })
 
@@ -46,13 +58,13 @@ app.use('/api/wishlist', wishlistRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/payments', paymentRoutes)
 
-// Error handling middleware (must be last)
-app.use(errorHandler)
-
-// 404 handler
+// 404 handler (must be before error handler)
 app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' })
 })
+
+// Error handling middleware (must be last)
+app.use(errorHandler)
 
 // Start server
 if (process.env.NODE_ENV !== 'production') {
