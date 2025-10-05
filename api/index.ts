@@ -41,17 +41,43 @@ app.get('/', (_req: Request, res: Response) => {
 })
 
 // Health check endpoint
-app.get('/api/health', (_req: Request, res: Response) => {
+app.get('/api/health', async (_req: Request, res: Response) => {
+  // Test Supabase connection
+  let dbStatus = '❌ Not configured'
+  let dbError = null
+  
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.VITE_SUPABASE_URL) {
+    try {
+      const { supabaseAdmin } = await import('./config/supabase.js')
+      const { error } = await supabaseAdmin.from('products').select('count').limit(1).single()
+      if (error) {
+        dbStatus = '❌ Connection failed'
+        dbError = error.message
+      } else {
+        dbStatus = '✅ Connected'
+      }
+    } catch (err) {
+      dbStatus = '❌ Error'
+      dbError = err instanceof Error ? err.message : 'Unknown error'
+    }
+  }
+  
   res.json({ 
     status: '✅ Healthy', 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    database: process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ Connected' : '❌ Not configured',
+    database: dbStatus,
+    databaseError: dbError,
     payments: process.env.STRIPE_SECRET_KEY ? '✅ Connected' : '❌ Not configured',
     ai: process.env.OPENAI_API_KEY ? '✅ Connected' : '❌ Not configured',
-    viteUrl: process.env.VITE_SITE_URL || 'Not set',
-    supabaseUrl: process.env.VITE_SUPABASE_URL || 'Not set',
-    message: 'All systems operational'
+    envVars: {
+      VITE_SITE_URL: process.env.VITE_SITE_URL ? '✅ Set' : '❌ Missing',
+      VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL ? '✅ Set' : '❌ Missing',
+      SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ Set' : '❌ Missing',
+      STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY ? '✅ Set' : '❌ Missing',
+      OPENAI_API_KEY: process.env.OPENAI_API_KEY ? '✅ Set' : '❌ Missing'
+    },
+    message: dbStatus === '✅ Connected' ? 'All systems operational' : 'Database connection issue'
   })
 })
 
