@@ -1,35 +1,17 @@
 import express, { Request, Response } from 'express'
 import cors from 'cors'
-import dotenv from 'dotenv'
-import authRoutes from './routes/auth.routes'
-import productRoutes from './routes/product.routes'
-import cartRoutes from './routes/cart.routes'
-import wishlistRoutes from './routes/wishlist.routes'
-import orderRoutes from './routes/order.routes'
-import paymentRoutes from './routes/payment.routes'
-import { errorHandler } from './middleware/error.middleware'
-import { requestLogger } from './middleware/logger.middleware'
-
-// Load environment variables
-dotenv.config()
 
 const app = express()
 
-// Middleware
-app.use(requestLogger)
-
+// Basic middleware first (before any imports that might fail)
 app.use(cors({
   origin: process.env.VITE_SITE_URL || 'http://localhost:5173',
   credentials: true
 }))
 
-// Raw body middleware for webhook verification (must be before express.json())
-app.use('/api/payments/webhook', express.raw({ type: 'application/json' }))
-
-// JSON middleware for other routes
 app.use(express.json())
 
-// Root route - Show a nice welcome message
+// Simple root route that always works
 app.get('/', (_req: Request, res: Response) => {
   res.json({ 
     message: '🎨 Artisy API - Your Premium Art Gallery Backend',
@@ -44,7 +26,8 @@ app.get('/', (_req: Request, res: Response) => {
       orders: '/api/orders',
       payments: '/api/payments'
     },
-    documentation: 'Visit https://artisy-app.vercel.app for the frontend'
+    documentation: 'Visit https://artisy-app.vercel.app for the frontend',
+    timestamp: new Date().toISOString()
   })
 })
 
@@ -57,29 +40,82 @@ app.get('/api/health', (_req: Request, res: Response) => {
     database: process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ Connected' : '❌ Not configured',
     payments: process.env.STRIPE_SECRET_KEY ? '✅ Connected' : '❌ Not configured',
     ai: process.env.OPENAI_API_KEY ? '✅ Connected' : '❌ Not configured',
+    viteUrl: process.env.VITE_SITE_URL || 'Not set',
+    supabaseUrl: process.env.VITE_SUPABASE_URL || 'Not set',
     message: 'All systems operational'
   })
 })
 
-// API Routes
-app.use('/api/auth', authRoutes)
-app.use('/api/products', productRoutes)
-app.use('/api/cart', cartRoutes)
-app.use('/api/wishlist', wishlistRoutes)
-app.use('/api/orders', orderRoutes)
-app.use('/api/payments', paymentRoutes)
+// Test endpoint to check if we can import modules
+app.get('/api/test', async (_req: Request, res: Response) => {
+  try {
+    // Try to import routes dynamically
+    const { default: productRoutes } = await import('./routes/product.routes.js')
+    res.json({ 
+      success: true, 
+      message: 'Module imports working',
+      hasProductRoutes: !!productRoutes
+    })
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      message: 'Module import failed',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    })
+  }
+})
 
-// 404 handler (must be before error handler)
+// Try to load routes (with error handling)
+try {
+  // Import routes asynchronously to catch any import errors
+  import('./routes/auth.routes.js').then(({ default: authRoutes }) => {
+    app.use('/api/auth', authRoutes)
+  }).catch(err => console.error('Failed to load auth routes:', err))
+
+  import('./routes/product.routes.js').then(({ default: productRoutes }) => {
+    app.use('/api/products', productRoutes)
+  }).catch(err => console.error('Failed to load product routes:', err))
+
+  import('./routes/cart.routes.js').then(({ default: cartRoutes }) => {
+    app.use('/api/cart', cartRoutes)
+  }).catch(err => console.error('Failed to load cart routes:', err))
+
+  import('./routes/wishlist.routes.js').then(({ default: wishlistRoutes }) => {
+    app.use('/api/wishlist', wishlistRoutes)
+  }).catch(err => console.error('Failed to load wishlist routes:', err))
+
+  import('./routes/order.routes.js').then(({ default: orderRoutes }) => {
+    app.use('/api/orders', orderRoutes)
+  }).catch(err => console.error('Failed to load order routes:', err))
+
+  import('./routes/payment.routes.js').then(({ default: paymentRoutes }) => {
+    // Raw body for webhook must be set before this route
+    app.use('/api/payments/webhook', express.raw({ type: 'application/json' }))
+    app.use('/api/payments', paymentRoutes)
+  }).catch(err => console.error('Failed to load payment routes:', err))
+
+} catch (error) {
+  console.error('Error loading routes:', error)
+}
+
+// 404 handler
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ 
     error: 'Endpoint not found',
     message: 'The requested API endpoint does not exist',
-    availableEndpoints: ['/api/health', '/api/products', '/api/auth', '/api/cart', '/api/wishlist', '/api/orders', '/api/payments']
+    availableEndpoints: ['/api/health', '/api/test', '/api/products', '/api/auth', '/api/cart', '/api/wishlist', '/api/orders', '/api/payments']
   })
 })
 
-// Error handling middleware (must be last)
-app.use(errorHandler)
+// Error handling middleware
+app.use((err: Error, _req: Request, res: Response, _next: unknown) => {
+  console.error('Error:', err)
+  res.status(500).json({
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  })
+})
 
 // Export for Vercel serverless
 export default app

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Artisy App Backend API",
   "main": "index.ts",
+  "type": "module",
   "scripts": {
     "dev": "tsx watch index.ts",
     "build": "tsc",
